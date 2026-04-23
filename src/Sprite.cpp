@@ -1,15 +1,20 @@
 #include "Sprite.h"
 #include "Game.h"
-#include <iostream>
 
 Sprite::Sprite()
 {
     texture = nullptr;
+    frameCountW = 1;
+    frameCountH = 1;
+    currentFrame = 0;
 }
 
-Sprite::Sprite(std::string file)
+Sprite::Sprite(std::string file, int frameCountW, int frameCountH)
 {
     texture = nullptr;
+    this->frameCountW = frameCountW;
+    this->frameCountH = frameCountH;
+    currentFrame = 0;
     Open(file);
 }
 
@@ -30,15 +35,16 @@ void Sprite::Open(std::string file)
 
     texture = IMG_LoadTexture(Game::GetInstance().GetRenderer(), file.c_str());
 
-    if (texture == nullptr)
+    if (texture != nullptr)
     {
-        std::cout << "Erro ao carregar textura " << file << ": " << SDL_GetError() << std::endl;
-        return;
+        int texWidth, texHeight;
+        SDL_QueryTexture(texture, nullptr, nullptr, &texWidth, &texHeight);
+
+        width = texWidth / frameCountW;
+        height = texHeight / frameCountH;
+
+        SetClip(0, 0, width, height);
     }
-
-    SDL_QueryTexture(texture, nullptr, nullptr, &width, &height);
-
-    SetClip(0, 0, width, height);
 }
 
 void Sprite::SetClip(int x, int y, int w, int h)
@@ -49,33 +55,47 @@ void Sprite::SetClip(int x, int y, int w, int h)
     clipRect.h = h;
 }
 
+void Sprite::SetFrame(int frame)
+{
+    currentFrame = frame;
+
+    int currentX = (currentFrame % frameCountW) * width;
+    int currentY = (currentFrame / frameCountW) * height;
+
+    SetClip(currentX, currentY, width, height);
+}
+
+void Sprite::SetFrameCount(int frameCountW, int frameCountH)
+{
+    this->frameCountW = frameCountW;
+    this->frameCountH = frameCountH;
+
+    if (texture != nullptr)
+    {
+        int texWidth, texHeight;
+        SDL_QueryTexture(texture, nullptr, nullptr, &texWidth, &texHeight);
+
+        width = texWidth / this->frameCountW;
+        height = texHeight / this->frameCountH;
+
+        currentFrame = 0;
+        SetClip(0, 0, width, height);
+    }
+}
+
 void Sprite::Render(int x, int y)
 {
-    if (texture == nullptr)
+    if (texture != nullptr)
     {
-        return;
+        SDL_Rect dstRect;
+        dstRect.x = x;
+        dstRect.y = y;
+        dstRect.w = clipRect.w;
+        dstRect.h = clipRect.h;
+        SDL_RenderCopy(Game::GetInstance().GetRenderer(), texture, &clipRect, &dstRect);
     }
-
-    SDL_Rect dstRect;
-    dstRect.x = x;
-    dstRect.y = y;
-    dstRect.w = clipRect.w;
-    dstRect.h = clipRect.h;
-
-    SDL_RenderCopy(Game::GetInstance().GetRenderer(), texture, &clipRect, &dstRect);
 }
 
-int Sprite::GetWidth()
-{
-    return width;
-}
-
-int Sprite::GetHeight()
-{
-    return height;
-}
-
-bool Sprite::IsOpen()
-{
-    return texture != nullptr;
-}
+int Sprite::GetWidth() { return width; }
+int Sprite::GetHeight() { return height; }
+bool Sprite::IsOpen() { return texture != nullptr; }
