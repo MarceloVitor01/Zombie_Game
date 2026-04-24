@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "State.h"
+#include "Resources.h"
 #include <iostream>
 
 Game *Game::instance = nullptr;
@@ -71,6 +72,9 @@ Game::~Game()
     Mix_CloseAudio();
     Mix_Quit();
     IMG_Quit();
+    Resources::ClearImages();
+    Resources::ClearMusics();
+    Resources::ClearSounds();
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();

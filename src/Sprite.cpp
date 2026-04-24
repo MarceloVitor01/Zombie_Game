@@ -1,5 +1,6 @@
 #include "Sprite.h"
 #include "Game.h"
+#include "Resources.h"
 
 Sprite::Sprite()
 {
@@ -22,7 +23,6 @@ Sprite::~Sprite()
 {
     if (texture != nullptr)
     {
-        SDL_DestroyTexture(texture);
     }
 }
 
@@ -30,10 +30,9 @@ void Sprite::Open(std::string file)
 {
     if (texture != nullptr)
     {
-        SDL_DestroyTexture(texture);
     }
 
-    texture = IMG_LoadTexture(Game::GetInstance().GetRenderer(), file.c_str());
+    texture = Resources::GetImage(file);
 
     if (texture != nullptr)
     {

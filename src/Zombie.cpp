@@ -2,7 +2,7 @@
 #include "GameObject.h"
 #include "Animator.h"
 
-Zombie::Zombie(GameObject &associated) : Component(associated)
+Zombie::Zombie(GameObject &associated) : Component(associated), deathSound("Recursos/audio/Dead.wav")
 {
     hp = 100;
 
@@ -26,6 +26,8 @@ void Zombie::Update(float dt)
             {
                 animator->SetAnimation("dead");
             }
+
+            deathSound.Play(1);
         }
     }
 }

@@ -1,5 +1,7 @@
 #include "State.h"
 #include "SpriteRenderer.h"
+#include "TileMap.h"
+#include "TileSet.h"
 #include "Zombie.h"
 #include "SDL_include.h"
 
@@ -13,6 +15,14 @@ State::State() : music("Recursos/audio/BGM.wav")
     bgObj->box.x = 0;
     bgObj->box.y = 0;
     objectArray.emplace_back(bgObj);
+
+    GameObject *mapObj = new GameObject();
+    TileSet *tileSet = new TileSet(64, 64, "Recursos/img/Tileset.png");
+    TileMap *tileMap = new TileMap(*mapObj, "Recursos/map/map.txt", tileSet);
+    mapObj->AddComponent(tileMap);
+    mapObj->box.x = 0;
+    mapObj->box.y = 0;
+    objectArray.emplace_back(mapObj);
 
     music.Play();
 }
