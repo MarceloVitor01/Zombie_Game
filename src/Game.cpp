@@ -69,12 +69,15 @@ Game::Game(std::string title, int width, int height)
 Game::~Game()
 {
     delete state;
-    Mix_CloseAudio();
-    Mix_Quit();
-    IMG_Quit();
+
     Resources::ClearImages();
     Resources::ClearMusics();
     Resources::ClearSounds();
+
+    Mix_CloseAudio();
+    Mix_Quit();
+    IMG_Quit();
+
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
@@ -109,6 +112,9 @@ void Game::Run()
         CalculateDeltaTime();
 
         state->Update(GetDeltaTime());
+
+        SDL_RenderClear(renderer);
+
         state->Render();
 
         SDL_RenderPresent(renderer);

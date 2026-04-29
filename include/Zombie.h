@@ -16,6 +16,7 @@ public:
 private:
     int hp;
     Sound deathSound;
+    float timeDead;
 };
 
 #endif

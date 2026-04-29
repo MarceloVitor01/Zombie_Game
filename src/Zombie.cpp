@@ -5,6 +5,7 @@
 Zombie::Zombie(GameObject &associated) : Component(associated), deathSound("Recursos/audio/Dead.wav")
 {
     hp = 100;
+    timeDead = 0.0f;
 
     Animator *animator = new Animator(associated);
     animator->AddAnimation("walking", Animation(0, 3, 10));
@@ -19,6 +20,7 @@ void Zombie::Update(float dt)
     if (hp > 0)
     {
         hp -= 1;
+
         if (hp <= 0)
         {
             Animator *animator = associated.GetComponent<Animator>();
@@ -28,6 +30,15 @@ void Zombie::Update(float dt)
             }
 
             deathSound.Play(1);
+        }
+    }
+    else
+    {
+        timeDead += dt;
+
+        if (timeDead >= 2.0f)
+        {
+            associated.RequestDelete();
         }
     }
 }
