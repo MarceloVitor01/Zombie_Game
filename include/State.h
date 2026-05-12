@@ -19,6 +19,7 @@ public:
 
 private:
     void AddObject(int mouseX, int mouseY);
+    void AddObject(GameObject *go);
 
     Music music;
     bool quitRequested;

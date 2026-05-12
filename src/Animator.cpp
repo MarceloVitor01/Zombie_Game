@@ -1,5 +1,5 @@
 #include "Animator.h"
-#include "SpriteRenderer.h"
+#include "Sprite.h"
 #include "GameObject.h"
 
 Animator::Animator(GameObject &associated) : Component(associated)
@@ -27,7 +27,7 @@ void Animator::Update(float dt)
             }
             timeElapsed -= anim.frameTime;
 
-            SpriteRenderer *sr = associated.GetComponent<SpriteRenderer>();
+            Sprite *sr = associated.GetComponent<Sprite>();
             if (sr != nullptr)
             {
                 sr->SetFrame(currentFrame);
@@ -52,7 +52,7 @@ void Animator::SetAnimation(std::string name)
         currentFrame = anim.frameStart;
         timeElapsed = 0;
 
-        SpriteRenderer *sr = associated.GetComponent<SpriteRenderer>();
+        Sprite *sr = associated.GetComponent<Sprite>();
         if (sr != nullptr)
         {
             sr->SetFrame(currentFrame);

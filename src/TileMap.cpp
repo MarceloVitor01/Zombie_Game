@@ -1,4 +1,5 @@
 #include "TileMap.h"
+#include "Camera.h"
 #include <fstream>
 #include <string>
 
@@ -68,7 +69,7 @@ void TileMap::Render()
 {
     for (int z = 0; z < mapDepth; z++)
     {
-        RenderLayer(z);
+        RenderLayer(z, Camera::pos.x, Camera::pos.y);
     }
 }
 
@@ -79,11 +80,11 @@ void TileMap::RenderLayer(int layer, int cameraX, int cameraY)
         for (int x = 0; x < mapWidth; x++)
         {
             int index = At(x, y, layer);
-
             if (index >= 0)
             {
-                float posX = (x * tileSet->GetTileWidth()) - cameraX;
-                float posY = (y * tileSet->GetTileHeight()) - cameraY;
+                float parallax = 1.0f + (layer * 0.5f);
+                float posX = (x * tileSet->GetTileWidth()) - (cameraX * parallax) + associated.box.x;
+                float posY = (y * tileSet->GetTileHeight()) - (cameraY * parallax) + associated.box.y;
                 tileSet->RenderTile(index, posX, posY);
             }
         }
@@ -91,7 +92,9 @@ void TileMap::RenderLayer(int layer, int cameraX, int cameraY)
 }
 
 int TileMap::GetWidth() { return mapWidth; }
+
 int TileMap::GetHeight() { return mapHeight; }
+
 int TileMap::GetDepth() { return mapDepth; }
 
 bool TileMap::Is(std::string type)

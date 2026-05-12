@@ -1,6 +1,7 @@
 #include "Game.h"
 #include "State.h"
 #include "Resources.h"
+#include "InputManager.h"
 #include <iostream>
 
 Game *Game::instance = nullptr;
@@ -11,7 +12,6 @@ Game &Game::GetInstance()
     {
         return *instance;
     }
-
     instance = new Game("Marcelo Vitor - 221030034", 1200, 900);
     return *instance;
 }
@@ -62,22 +62,18 @@ Game::Game(std::string title, int width, int height)
 
     frameStart = SDL_GetTicks();
     dt = 0;
-
     state = new State();
 }
 
 Game::~Game()
 {
     delete state;
-
     Resources::ClearImages();
     Resources::ClearMusics();
     Resources::ClearSounds();
-
     Mix_CloseAudio();
     Mix_Quit();
     IMG_Quit();
-
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
@@ -107,16 +103,14 @@ float Game::GetDeltaTime()
 
 void Game::Run()
 {
+    InputManager &input = InputManager::GetInstance();
     while (!state->QuitRequested())
     {
         CalculateDeltaTime();
-
+        input.Update();
         state->Update(GetDeltaTime());
-
         SDL_RenderClear(renderer);
-
         state->Render();
-
         SDL_RenderPresent(renderer);
         SDL_Delay(33);
     }
