@@ -26,7 +26,7 @@ void Zombie::Update(float dt)
     if (isDead)
     {
         deathTimer.Update(dt);
-        if (deathTimer.Get() >= 2.0f)
+        if (deathTimer.Get() >= 5.0f)
         {
             associated.RequestDelete();
         }
@@ -36,7 +36,7 @@ void Zombie::Update(float dt)
     if (hit)
     {
         hitTimer.Update(dt);
-        if (hitTimer.Get() >= 0.2f)
+        if (hitTimer.Get() >= 0.5f)
         {
             hit = false;
             if (animator != nullptr)
