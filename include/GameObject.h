@@ -1,11 +1,12 @@
 #ifndef GAMEOBJECT_H
 #define GAMEOBJECT_H
 
+#include "Rect.h"
 #include <vector>
 #include <memory>
 #include <string>
-#include "Component.h"
-#include "Rect.h"
+
+class Component;
 
 class GameObject
 {
@@ -13,20 +14,20 @@ public:
     GameObject();
     ~GameObject();
 
+    void Start();
     void Update(float dt);
     void Render();
     bool IsDead();
     void RequestDelete();
     void AddComponent(Component *cpt);
     void RemoveComponent(Component *cpt);
-    Component *GetComponent(std::string type);
 
     template <typename T>
     T *GetComponent()
     {
-        for (auto &component : components)
+        for (size_t i = 0; i < components.size(); i++)
         {
-            T *ptr = dynamic_cast<T *>(component.get());
+            T *ptr = dynamic_cast<T *>(components[i].get());
             if (ptr != nullptr)
             {
                 return ptr;
@@ -36,9 +37,11 @@ public:
     }
 
     Rect box;
+    bool started;
+    double angleDeg;
 
 private:
-    std::vector<std::unique_ptr<Component>> components;
+    std::vector<std::shared_ptr<Component>> components;
     bool isDead;
 };
 

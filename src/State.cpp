@@ -3,13 +3,15 @@
 #include "TileMap.h"
 #include "TileSet.h"
 #include "Zombie.h"
+#include "Character.h"
+#include "PlayerController.h"
 #include "InputManager.h"
 #include "Camera.h"
-#include "SDL_include.h"
 
 State::State() : music("Recursos/audio/BGM.wav")
 {
     quitRequested = false;
+    started = false;
 
     GameObject *bgObj = new GameObject();
     Sprite *bgSprite = new Sprite(*bgObj, "Recursos/img/Background.png");
@@ -27,12 +29,35 @@ State::State() : music("Recursos/audio/BGM.wav")
     mapObj->box.y = 0;
     AddObject(mapObj);
 
+    GameObject *charGo = new GameObject();
+    Character *character = new Character(*charGo, "Recursos/img/Player.png");
+    charGo->AddComponent(character);
+
+    PlayerController *pc = new PlayerController(*charGo);
+    charGo->AddComponent(pc);
+
+    charGo->box.x = 1280;
+    charGo->box.y = 1280;
+    AddObject(charGo);
+
+    Camera::Follow(charGo);
+
     music.Play();
 }
 
 State::~State()
 {
     objectArray.clear();
+}
+
+void State::Start()
+{
+    LoadAssets();
+    for (size_t i = 0; i < objectArray.size(); i++)
+    {
+        objectArray[i]->Start();
+    }
+    started = true;
 }
 
 void State::LoadAssets() {}
@@ -98,7 +123,25 @@ void State::AddObject(int mouseX, int mouseY)
     AddObject(go);
 }
 
-void State::AddObject(GameObject *go)
+std::weak_ptr<GameObject> State::AddObject(GameObject *go)
 {
-    objectArray.emplace_back(go);
+    std::shared_ptr<GameObject> sharedGo(go);
+    objectArray.push_back(sharedGo);
+    if (started)
+    {
+        sharedGo->Start();
+    }
+    return std::weak_ptr<GameObject>(sharedGo);
+}
+
+std::weak_ptr<GameObject> State::GetObjectPtr(GameObject *go)
+{
+    for (size_t i = 0; i < objectArray.size(); i++)
+    {
+        if (objectArray[i].get() == go)
+        {
+            return std::weak_ptr<GameObject>(objectArray[i]);
+        }
+    }
+    return std::weak_ptr<GameObject>();
 }

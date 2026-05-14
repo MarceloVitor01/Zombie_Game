@@ -1,9 +1,11 @@
 #include "GameObject.h"
-#include <algorithm>
+#include "Component.h"
 
 GameObject::GameObject()
 {
     isDead = false;
+    started = false;
+    angleDeg = 0.0;
 }
 
 GameObject::~GameObject()
@@ -11,19 +13,28 @@ GameObject::~GameObject()
     components.clear();
 }
 
+void GameObject::Start()
+{
+    for (size_t i = 0; i < components.size(); i++)
+    {
+        components[i]->Start();
+    }
+    started = true;
+}
+
 void GameObject::Update(float dt)
 {
-    for (auto &component : components)
+    for (size_t i = 0; i < components.size(); i++)
     {
-        component->Update(dt);
+        components[i]->Update(dt);
     }
 }
 
 void GameObject::Render()
 {
-    for (auto &component : components)
+    for (size_t i = 0; i < components.size(); i++)
     {
-        component->Render();
+        components[i]->Render();
     }
 }
 
@@ -40,28 +51,20 @@ void GameObject::RequestDelete()
 void GameObject::AddComponent(Component *cpt)
 {
     components.emplace_back(cpt);
+    if (started)
+    {
+        cpt->Start();
+    }
 }
 
 void GameObject::RemoveComponent(Component *cpt)
 {
-    auto it = std::remove_if(components.begin(), components.end(),
-                             [&](const std::unique_ptr<Component> &p)
-                             { return p.get() == cpt; });
-
-    if (it != components.end())
+    for (size_t i = 0; i < components.size(); i++)
     {
-        components.erase(it, components.end());
-    }
-}
-
-Component *GameObject::GetComponent(std::string type)
-{
-    for (auto &component : components)
-    {
-        if (component->Is(type))
+        if (components[i].get() == cpt)
         {
-            return component.get();
+            components.erase(components.begin() + i);
+            break;
         }
     }
-    return nullptr;
 }

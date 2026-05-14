@@ -31,6 +31,7 @@ void Animator::Update(float dt)
             if (sr != nullptr)
             {
                 sr->SetFrame(currentFrame);
+                sr->SetFlip(anim.flip);
             }
         }
     }
@@ -45,6 +46,9 @@ bool Animator::Is(std::string type)
 
 void Animator::SetAnimation(std::string name)
 {
+    if (currentAnimation == name)
+        return;
+
     if (animations.find(name) != animations.end())
     {
         currentAnimation = name;
@@ -56,6 +60,7 @@ void Animator::SetAnimation(std::string name)
         if (sr != nullptr)
         {
             sr->SetFrame(currentFrame);
+            sr->SetFlip(anim.flip);
         }
     }
 }

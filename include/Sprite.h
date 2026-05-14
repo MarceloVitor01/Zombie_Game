@@ -3,6 +3,7 @@
 
 #include "Component.h"
 #include "SDL_include.h"
+#include "Vec2.h"
 #include <string>
 
 class Sprite : public Component
@@ -30,6 +31,11 @@ public:
     void SetCameraFollower(bool follow);
     bool IsCameraFollower();
 
+    void SetScale(float scaleX, float scaleY);
+    Vec2 GetScale();
+
+    void SetFlip(SDL_RendererFlip flip);
+
 private:
     SDL_Texture *texture;
     int width;
@@ -39,6 +45,8 @@ private:
     int frameCountH;
     int currentFrame;
     bool cameraFollower;
+    Vec2 scale;
+    SDL_RendererFlip flip;
 };
 
 #endif

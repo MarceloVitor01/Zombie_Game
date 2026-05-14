@@ -1,8 +1,6 @@
 #include "Game.h"
-#include "State.h"
 #include "Resources.h"
 #include "InputManager.h"
-#include <iostream>
 
 Game *Game::instance = nullptr;
 
@@ -23,43 +21,35 @@ Game::Game(std::string title, int width, int height)
         exit(EXIT_FAILURE);
     }
     instance = this;
-
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) != 0)
     {
         exit(EXIT_FAILURE);
     }
-
     int imageFlags = IMG_INIT_JPG | IMG_INIT_PNG | IMG_INIT_TIF;
     if (IMG_Init(imageFlags) == 0)
     {
         exit(EXIT_FAILURE);
     }
-
     int mixFlags = MIX_INIT_FLAC | MIX_INIT_OGG | MIX_INIT_MP3;
     if (Mix_Init(mixFlags) == 0)
     {
         exit(EXIT_FAILURE);
     }
-
     if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024) != 0)
     {
         exit(EXIT_FAILURE);
     }
-
     Mix_AllocateChannels(32);
-
     window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, 0);
     if (window == nullptr)
     {
         exit(EXIT_FAILURE);
     }
-
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (renderer == nullptr)
     {
         exit(EXIT_FAILURE);
     }
-
     frameStart = SDL_GetTicks();
     dt = 0;
     state = new State();
@@ -104,6 +94,7 @@ float Game::GetDeltaTime()
 void Game::Run()
 {
     InputManager &input = InputManager::GetInstance();
+    state->Start();
     while (!state->QuitRequested())
     {
         CalculateDeltaTime();

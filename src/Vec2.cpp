@@ -20,32 +20,32 @@ Vec2 Vec2::operator*(const float rhs) const
     return Vec2(x * rhs, y * rhs);
 }
 
-float Vec2::Magnitude() const
+float Vec2::GetMagnitude() const
 {
     return std::sqrt(x * x + y * y);
 }
 
 Vec2 Vec2::Normalize() const
 {
-    float mag = Magnitude();
-    if (mag == 0)
+    float m = GetMagnitude();
+    if (m == 0)
         return Vec2(0, 0);
-    return Vec2(x / mag, y / mag);
+    return Vec2(x / m, y / m);
 }
 
-float Vec2::Distance(const Vec2 &dest) const
+float Vec2::Distance(const Vec2 &other) const
 {
-    return (*this - dest).Magnitude();
+    return (*this - other).GetMagnitude();
 }
 
-float Vec2::Inclination() const
+float Vec2::GetAngle() const
 {
     return std::atan2(y, x);
 }
 
-float Vec2::InclinationD(const Vec2 &dest) const
+float Vec2::GetAngle(const Vec2 &other) const
 {
-    return (dest - *this).Inclination();
+    return (other - *this).GetAngle();
 }
 
 Vec2 Vec2::GetRotated(float angle) const

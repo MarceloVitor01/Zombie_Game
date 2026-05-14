@@ -11,10 +11,11 @@ public:
     Rect();
     Rect(float x, float y, float w, float h);
 
-    bool Contains(float mouseX, float mouseY) const;
+    bool Contains(float mouseX, float mouseY);
     Vec2 Center() const;
-    void SetCenter(const Vec2 &center);
     void SetCenter(float centerX, float centerY);
+    void SetCenter(const Vec2 &center);
+    float Distance(const Rect &other) const;
 };
 
 #endif

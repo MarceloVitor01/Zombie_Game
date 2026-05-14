@@ -1,11 +1,9 @@
 #ifndef GAME_H
 #define GAME_H
 
-#define INCLUDE_SDL
 #include "SDL_include.h"
+#include "State.h"
 #include <string>
-
-class State;
 
 class Game
 {
@@ -25,7 +23,6 @@ private:
     SDL_Window *window;
     SDL_Renderer *renderer;
     State *state;
-
     int frameStart;
     float dt;
 };

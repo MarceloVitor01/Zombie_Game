@@ -2,6 +2,7 @@
 #include "Game.h"
 #include "Resources.h"
 #include "Camera.h"
+#include "GameObject.h"
 
 Sprite::Sprite(GameObject &associated) : Component(associated)
 {
@@ -12,6 +13,8 @@ Sprite::Sprite(GameObject &associated) : Component(associated)
     frameCountH = 1;
     currentFrame = 0;
     cameraFollower = false;
+    scale = Vec2(1.0f, 1.0f);
+    flip = SDL_FLIP_NONE;
 }
 
 Sprite::Sprite(GameObject &associated, std::string file, int frameCountW, int frameCountH) : Component(associated)
@@ -21,6 +24,8 @@ Sprite::Sprite(GameObject &associated, std::string file, int frameCountW, int fr
     this->frameCountH = frameCountH;
     currentFrame = 0;
     cameraFollower = false;
+    scale = Vec2(1.0f, 1.0f);
+    flip = SDL_FLIP_NONE;
     Open(file);
 }
 
@@ -33,11 +38,12 @@ void Sprite::Open(std::string file)
     {
         int texWidth, texHeight;
         SDL_QueryTexture(texture, nullptr, nullptr, &texWidth, &texHeight);
+
         width = texWidth / frameCountW;
         height = texHeight / frameCountH;
         SetClip(0, 0, width, height);
-        associated.box.w = width;
-        associated.box.h = height;
+        associated.box.w = width * scale.x;
+        associated.box.h = height * scale.y;
     }
 }
 
@@ -69,14 +75,16 @@ void Sprite::SetFrameCount(int frameCountW, int frameCountH)
         height = texHeight / this->frameCountH;
         currentFrame = 0;
         SetClip(0, 0, width, height);
-        associated.box.w = width;
-        associated.box.h = height;
+        associated.box.w = width * scale.x;
+        associated.box.h = height * scale.y;
     }
 }
 
 void Sprite::Render()
 {
-    Render(associated.box.x, associated.box.y);
+    int renderX = associated.box.x - (cameraFollower ? 0 : Camera::pos.x);
+    int renderY = associated.box.y - (cameraFollower ? 0 : Camera::pos.y);
+    Render(renderX, renderY);
 }
 
 void Sprite::Render(int x, int y)
@@ -84,17 +92,18 @@ void Sprite::Render(int x, int y)
     if (texture != nullptr)
     {
         SDL_Rect dstRect;
-        dstRect.x = x - (cameraFollower ? 0 : Camera::pos.x);
-        dstRect.y = y - (cameraFollower ? 0 : Camera::pos.y);
-        dstRect.w = clipRect.w;
-        dstRect.h = clipRect.h;
-        SDL_RenderCopy(Game::GetInstance().GetRenderer(), texture, &clipRect, &dstRect);
+        dstRect.x = x;
+        dstRect.y = y;
+        dstRect.w = clipRect.w * scale.x;
+        dstRect.h = clipRect.h * scale.y;
+
+        SDL_RenderCopyEx(Game::GetInstance().GetRenderer(), texture, &clipRect, &dstRect, associated.angleDeg, nullptr, flip);
     }
 }
 
-int Sprite::GetWidth() { return width; }
+int Sprite::GetWidth() { return width * scale.x; }
 
-int Sprite::GetHeight() { return height; }
+int Sprite::GetHeight() { return height * scale.y; }
 
 bool Sprite::IsOpen() { return texture != nullptr; }
 
@@ -110,4 +119,27 @@ void Sprite::SetCameraFollower(bool follow)
 bool Sprite::IsCameraFollower()
 {
     return cameraFollower;
+}
+
+void Sprite::SetScale(float scaleX, float scaleY)
+{
+    if (scaleX != 0 && scaleY != 0)
+    {
+        scale.x = scaleX;
+        scale.y = scaleY;
+        Vec2 center = associated.box.Center();
+        associated.box.w = width * scale.x;
+        associated.box.h = height * scale.y;
+        associated.box.SetCenter(center);
+    }
+}
+
+Vec2 Sprite::GetScale()
+{
+    return scale;
+}
+
+void Sprite::SetFlip(SDL_RendererFlip flip)
+{
+    this->flip = flip;
 }
