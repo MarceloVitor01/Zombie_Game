@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "State.h"
 #include "Sprite.h"
 #include "TileMap.h"
@@ -97,9 +98,23 @@ void State::Update(float dt)
 
 void State::Render()
 {
-    for (size_t i = 0; i < objectArray.size(); i++)
+    if (objectArray.size() > 0)
+        objectArray[0]->Render();
+    if (objectArray.size() > 1)
+        objectArray[1]->Render();
+
+    std::vector<GameObject *> entities;
+    for (size_t i = 2; i < objectArray.size(); i++)
     {
-        objectArray[i]->Render();
+        entities.push_back(objectArray[i].get());
+    }
+
+    std::sort(entities.begin(), entities.end(), [](GameObject *a, GameObject *b)
+              { return (a->box.y + a->box.h) < (b->box.y + b->box.h); });
+
+    for (size_t i = 0; i < entities.size(); i++)
+    {
+        entities[i]->Render();
     }
 }
 
