@@ -5,6 +5,7 @@
 #include "Game.h"
 #include "Camera.h"
 #include "InputManager.h"
+#include "Character.h"
 #include <cmath>
 
 Gun::Gun(GameObject &associated, std::weak_ptr<GameObject> character)
@@ -27,6 +28,13 @@ void Gun::Update(float dt)
 {
     std::shared_ptr<GameObject> charGo = character.lock();
     if (!charGo || charGo->IsDead())
+    {
+        associated.RequestDelete();
+        return;
+    }
+
+    Character *charComp = charGo->GetComponent<Character>();
+    if (charComp && charComp->hp <= 0)
     {
         associated.RequestDelete();
         return;
@@ -102,14 +110,21 @@ void Gun::Shoot(Vec2 target)
         cooldownState = 1;
         cdTimer.Restart();
 
-        GameObject *bulletGo = new GameObject();
-        Vec2 tip(associated.box.w / 2.0f, 0);
-        tip = tip.GetRotated(angle);
-        bulletGo->box.x = center.x + tip.x;
-        bulletGo->box.y = center.y + tip.y;
+        float spread[3] = {-0.15f, 0.0f, 0.15f};
 
-        Bullet *bullet = new Bullet(*bulletGo, angle, 500.0f, 10, 1000.0f, false);
-        bulletGo->AddComponent(bullet);
-        Game::GetInstance().GetState().AddObject(bulletGo);
+        for (int i = 0; i < 3; i++)
+        {
+            GameObject *bulletGo = new GameObject();
+            float spreadAngle = angle + spread[i];
+
+            Vec2 tip(associated.box.w / 2.0f, 0);
+            tip = tip.GetRotated(spreadAngle);
+            bulletGo->box.x = center.x + tip.x;
+            bulletGo->box.y = center.y + tip.y;
+
+            Bullet *bullet = new Bullet(*bulletGo, spreadAngle, 500.0f, 10, 1000.0f, false);
+            bulletGo->AddComponent(bullet);
+            Game::GetInstance().GetState().AddObject(bulletGo);
+        }
     }
 }

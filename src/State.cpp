@@ -9,12 +9,15 @@
 #include "Camera.h"
 #include "Collider.h"
 #include "Collision.h"
+#include "WaveSpawner.h"
 #include <algorithm>
 
 State::State() : music("Recursos/audio/BGM.wav")
 {
     quitRequested = false;
     started = false;
+    endGameFlag = false;
+    winFlag = false;
 
     GameObject *bgObj = new GameObject();
     Sprite *bgSprite = new Sprite(*bgObj, "Recursos/img/Background.png");
@@ -44,6 +47,21 @@ State::State() : music("Recursos/audio/BGM.wav")
     AddObject(charGo);
 
     Camera::Follow(charGo);
+
+    GameObject *waveGo = new GameObject();
+    WaveSpawner *spawner = new WaveSpawner(*waveGo);
+    spawner->AddCommand(WaveAction::WAIT, 2.0f, Vec2(0, 0));
+    spawner->AddCommand(WaveAction::SPAWN_NPC, 0.0f, Vec2(1000, 1000));
+    spawner->AddCommand(WaveAction::SPAWN_NPC, 0.0f, Vec2(1200, 1000));
+    spawner->AddCommand(WaveAction::WAIT, 3.0f, Vec2(0, 0));
+    spawner->AddCommand(WaveAction::SPAWN_ZOMBIE, 0.0f, Vec2(800, 1200));
+    spawner->AddCommand(WaveAction::SPAWN_ZOMBIE, 0.0f, Vec2(1500, 1200));
+    spawner->AddCommand(WaveAction::WAIT, 5.0f, Vec2(0, 0));
+    spawner->AddCommand(WaveAction::SPAWN_ZOMBIE, 0.0f, Vec2(1300, 1500));
+    spawner->AddCommand(WaveAction::SPAWN_ZOMBIE, 0.0f, Vec2(1400, 1500));
+    spawner->AddCommand(WaveAction::SPAWN_ZOMBIE, 0.0f, Vec2(1500, 1500));
+    waveGo->AddComponent(spawner);
+    AddObject(waveGo);
 
     music.Play();
 }
@@ -110,6 +128,22 @@ void State::Update(float dt)
             i--;
         }
     }
+
+    if (endGameFlag)
+    {
+        endGameFlag = false;
+        objectArray.clear();
+
+        GameObject *endGo = new GameObject();
+        Sprite *bgSprite = new Sprite(*endGo, winFlag ? "Recursos/img/Win.png" : "Recursos/img/Lose.png");
+        bgSprite->SetCameraFollower(true);
+        endGo->AddComponent(bgSprite);
+        AddObject(endGo);
+
+        music.Stop(0);
+        music.Open(winFlag ? "Recursos/audio/endStateWin.ogg" : "Recursos/audio/endStateLose.ogg");
+        music.Play();
+    }
 }
 
 void State::Render()
@@ -168,4 +202,10 @@ std::weak_ptr<GameObject> State::GetObjectPtr(GameObject *go)
             return std::weak_ptr<GameObject>(objectArray[i]);
     }
     return std::weak_ptr<GameObject>();
+}
+
+void State::EndGame(bool win)
+{
+    endGameFlag = true;
+    winFlag = win;
 }

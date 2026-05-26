@@ -23,7 +23,6 @@ public:
     void Issue(Command task);
     void NotifyCollision(GameObject &other) override;
 
-    // Novo método para o Zumbi saber onde o player está!
     Vec2 GetPlayerCenter();
 
     static Character *player;

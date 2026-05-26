@@ -1,33 +1,35 @@
 #ifndef STATE_H
 #define STATE_H
 
+#include "GameObject.h"
+#include "Music.h"
 #include <vector>
 #include <memory>
-#include "Music.h"
-#include "GameObject.h"
 
 class State
 {
 public:
     State();
     ~State();
-
-    void Start();
+    bool QuitRequested();
     void LoadAssets();
     void Update(float dt);
     void Render();
-    bool QuitRequested();
-
+    void Start();
     std::weak_ptr<GameObject> AddObject(GameObject *go);
     std::weak_ptr<GameObject> GetObjectPtr(GameObject *go);
 
+    void EndGame(bool win);
+
 private:
     void AddObject(int mouseX, int mouseY);
-
     Music music;
     bool quitRequested;
     bool started;
     std::vector<std::shared_ptr<GameObject>> objectArray;
+
+    bool endGameFlag;
+    bool winFlag;
 };
 
 #endif

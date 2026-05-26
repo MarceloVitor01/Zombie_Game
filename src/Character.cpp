@@ -26,9 +26,10 @@ Character::Character(GameObject &associated, std::string sprite)
     anim->AddAnimation("idle_left", Animation(0, 0, 0.1f, SDL_FLIP_HORIZONTAL));
     anim->AddAnimation("walking_right", Animation(0, 3, 0.1f, SDL_FLIP_NONE));
     anim->AddAnimation("walking_left", Animation(0, 3, 0.1f, SDL_FLIP_HORIZONTAL));
-    anim->AddAnimation("dead_right", Animation(0, 0, 0.1f, SDL_FLIP_NONE));
-    anim->AddAnimation("dead_left", Animation(0, 0, 0.1f, SDL_FLIP_HORIZONTAL));
+    anim->AddAnimation("dead_right", Animation(10, 11, 0.2f, SDL_FLIP_NONE));
+    anim->AddAnimation("dead_left", Animation(10, 11, 0.2f, SDL_FLIP_HORIZONTAL));
     associated.AddComponent(anim);
+
     anim->SetAnimation("idle_right");
 }
 
@@ -56,9 +57,16 @@ void Character::Update(float dt)
 
     if (hp <= 0)
     {
+        if (animator)
+            animator->SetAnimation(facingRight ? "dead_right" : "dead_left");
+
         deathTimer.Update(dt);
         if (deathTimer.Get() >= 2.0f)
+        {
+            // AQUI ESTÁ: Se o jogador morrer, o ecrã muda para LOSE
+            Game::GetInstance().GetState().EndGame(false);
             associated.RequestDelete();
+        }
         return;
     }
 
@@ -96,9 +104,7 @@ void Character::Update(float dt)
 
     if (animator)
     {
-        if (hp <= 0)
-            animator->SetAnimation(facingRight ? "dead_right" : "dead_left");
-        else if (moved)
+        if (moved)
             animator->SetAnimation(facingRight ? "walking_right" : "walking_left");
         else
             animator->SetAnimation(facingRight ? "idle_right" : "idle_left");
@@ -111,7 +117,6 @@ bool Character::Is(std::string type) { return type == "Character"; }
 
 void Character::Issue(Command task) { taskQueue.push(task); }
 
-// A implementação mágica
 Vec2 Character::GetPlayerCenter()
 {
     return associated.box.Center();
