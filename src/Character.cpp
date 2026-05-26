@@ -3,10 +3,15 @@
 #include "Animator.h"
 #include "Gun.h"
 #include "Game.h"
+#include "Collider.h"
+#include "Zombie.h"
+#include "Bullet.h"
+#include "Camera.h"
 
 Character *Character::player = nullptr;
 
-Character::Character(GameObject &associated, std::string sprite) : Component(associated)
+Character::Character(GameObject &associated, std::string sprite)
+    : Component(associated), hitSound("Recursos/audio/Hit1.wav"), deadSound("Recursos/audio/Dead.wav")
 {
     player = this;
     hp = 100;
@@ -24,20 +29,20 @@ Character::Character(GameObject &associated, std::string sprite) : Component(ass
     anim->AddAnimation("dead_right", Animation(0, 0, 0.1f, SDL_FLIP_NONE));
     anim->AddAnimation("dead_left", Animation(0, 0, 0.1f, SDL_FLIP_HORIZONTAL));
     associated.AddComponent(anim);
-
     anim->SetAnimation("idle_right");
 }
 
 Character::~Character()
 {
     if (player == this)
-    {
         player = nullptr;
-    }
 }
 
 void Character::Start()
 {
+    Collider *collider = new Collider(associated, Vec2(0.6f, 0.8f));
+    associated.AddComponent(collider);
+
     GameObject *gunGo = new GameObject();
     Gun *gunComp = new Gun(*gunGo, Game::GetInstance().GetState().GetObjectPtr(&associated));
     gunGo->AddComponent(gunComp);
@@ -47,19 +52,17 @@ void Character::Start()
 void Character::Update(float dt)
 {
     Animator *animator = associated.GetComponent<Animator>();
+    damageTimer.Update(dt);
 
     if (hp <= 0)
     {
         deathTimer.Update(dt);
         if (deathTimer.Get() >= 2.0f)
-        {
             associated.RequestDelete();
-        }
         return;
     }
 
     bool moved = false;
-
     while (!taskQueue.empty())
     {
         Command cmd = taskQueue.front();
@@ -73,7 +76,6 @@ void Character::Update(float dt)
                 associated.box.x += speed.x * dt;
                 associated.box.y += speed.y * dt;
                 moved = true;
-
                 if (speed.x > 0)
                     facingRight = true;
                 else if (speed.x < 0)
@@ -95,28 +97,53 @@ void Character::Update(float dt)
     if (animator)
     {
         if (hp <= 0)
-        {
             animator->SetAnimation(facingRight ? "dead_right" : "dead_left");
-        }
         else if (moved)
-        {
             animator->SetAnimation(facingRight ? "walking_right" : "walking_left");
-        }
         else
-        {
             animator->SetAnimation(facingRight ? "idle_right" : "idle_left");
-        }
     }
 }
 
 void Character::Render() {}
 
-bool Character::Is(std::string type)
+bool Character::Is(std::string type) { return type == "Character"; }
+
+void Character::Issue(Command task) { taskQueue.push(task); }
+
+// A implementação mágica
+Vec2 Character::GetPlayerCenter()
 {
-    return type == "Character";
+    return associated.box.Center();
 }
 
-void Character::Issue(Command task)
+void Character::NotifyCollision(GameObject &other)
 {
-    taskQueue.push(task);
+    if (hp <= 0)
+        return;
+
+    Zombie *zombie = other.GetComponent<Zombie>();
+    if (zombie && damageTimer.Get() > 1.0f)
+    {
+        hp -= 10;
+        damageTimer.Restart();
+        if (hp > 0)
+            hitSound.Play(1);
+        else
+        {
+            deadSound.Play(1);
+            Camera::Unfollow();
+        }
+    }
+
+    Bullet *bullet = other.GetComponent<Bullet>();
+    if (bullet && bullet->targetsPlayer)
+    {
+        hp -= bullet->GetDamage();
+        if (hp <= 0)
+        {
+            deadSound.Play(1);
+            Camera::Unfollow();
+        }
+    }
 }

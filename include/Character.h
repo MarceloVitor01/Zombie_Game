@@ -5,6 +5,7 @@
 #include "Timer.h"
 #include "Vec2.h"
 #include "Command.h"
+#include "Sound.h"
 #include <memory>
 #include <queue>
 #include <string>
@@ -20,6 +21,10 @@ public:
     void Render() override;
     bool Is(std::string type) override;
     void Issue(Command task);
+    void NotifyCollision(GameObject &other) override;
+
+    // Novo método para o Zumbi saber onde o player está!
+    Vec2 GetPlayerCenter();
 
     static Character *player;
     int hp;
@@ -30,7 +35,10 @@ private:
     Vec2 speed;
     float linearSpeed;
     Timer deathTimer;
+    Timer damageTimer;
     bool facingRight;
+    Sound hitSound;
+    Sound deadSound;
 };
 
 #endif

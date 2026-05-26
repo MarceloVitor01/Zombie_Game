@@ -1,4 +1,3 @@
-#include <algorithm>
 #include "State.h"
 #include "Sprite.h"
 #include "TileMap.h"
@@ -8,6 +7,9 @@
 #include "PlayerController.h"
 #include "InputManager.h"
 #include "Camera.h"
+#include "Collider.h"
+#include "Collision.h"
+#include <algorithm>
 
 State::State() : music("Recursos/audio/BGM.wav")
 {
@@ -66,11 +68,8 @@ void State::LoadAssets() {}
 void State::Update(float dt)
 {
     InputManager &input = InputManager::GetInstance();
-
     if (input.QuitRequested() || input.KeyPress(ESCAPE_KEY))
-    {
         quitRequested = true;
-    }
 
     Camera::Update(dt);
 
@@ -84,6 +83,23 @@ void State::Update(float dt)
     for (size_t i = 0; i < objectArray.size(); i++)
     {
         objectArray[i]->Update(dt);
+    }
+
+    for (size_t i = 0; i < objectArray.size(); i++)
+    {
+        for (size_t j = i + 1; j < objectArray.size(); j++)
+        {
+            Collider *colA = objectArray[i]->GetComponent<Collider>();
+            Collider *colB = objectArray[j]->GetComponent<Collider>();
+            if (colA && colB)
+            {
+                if (Collision::IsColliding(colA->box, colB->box, objectArray[i]->angleDeg * M_PI / 180.0f, objectArray[j]->angleDeg * M_PI / 180.0f))
+                {
+                    objectArray[i]->NotifyCollision(*objectArray[j]);
+                    objectArray[j]->NotifyCollision(*objectArray[i]);
+                }
+            }
+        }
     }
 
     for (size_t i = 0; i < objectArray.size(); i++)
@@ -118,10 +134,7 @@ void State::Render()
     }
 }
 
-bool State::QuitRequested()
-{
-    return quitRequested;
-}
+bool State::QuitRequested() { return quitRequested; }
 
 void State::AddObject(int mouseX, int mouseY)
 {
@@ -143,9 +156,7 @@ std::weak_ptr<GameObject> State::AddObject(GameObject *go)
     std::shared_ptr<GameObject> sharedGo(go);
     objectArray.push_back(sharedGo);
     if (started)
-    {
         sharedGo->Start();
-    }
     return std::weak_ptr<GameObject>(sharedGo);
 }
 
@@ -154,9 +165,7 @@ std::weak_ptr<GameObject> State::GetObjectPtr(GameObject *go)
     for (size_t i = 0; i < objectArray.size(); i++)
     {
         if (objectArray[i].get() == go)
-        {
             return std::weak_ptr<GameObject>(objectArray[i]);
-        }
     }
     return std::weak_ptr<GameObject>();
 }

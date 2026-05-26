@@ -1,89 +1,89 @@
 #include "Zombie.h"
-#include "GameObject.h"
+#include "Sprite.h"
 #include "Animator.h"
-#include "InputManager.h"
-#include "Camera.h"
+#include "GameObject.h"
+#include "Collider.h"
+#include "Bullet.h"
+#include "Character.h"
 
-Zombie::Zombie(GameObject &associated) : Component(associated), deathSound("Recursos/audio/Dead.wav"), hitSound("Recursos/audio/Hit1.wav")
+int Zombie::zombieCount = 0;
+
+Zombie::Zombie(GameObject &associated) : Component(associated)
 {
-    hp = 30;
+    hp = 50;
     isDead = false;
-    hit = false;
+    zombieCount++;
 
     Animator *animator = new Animator(associated);
-    animator->AddAnimation("walking", Animation(0, 3, 0.1f));
-    animator->AddAnimation("hit", Animation(4, 4, 0.2f));
-    animator->AddAnimation("dead", Animation(5, 5, 0.1f));
+    animator->AddAnimation("walking_right", Animation(0, 3, 0.15f, SDL_FLIP_NONE));
+    animator->AddAnimation("walking_left", Animation(0, 3, 0.15f, SDL_FLIP_HORIZONTAL));
+    animator->AddAnimation("dead_right", Animation(5, 5, 0.1f, SDL_FLIP_NONE));
+    animator->AddAnimation("dead_left", Animation(5, 5, 0.1f, SDL_FLIP_HORIZONTAL));
     associated.AddComponent(animator);
+    animator->SetAnimation("walking_right");
+}
 
-    animator->SetAnimation("walking");
+Zombie::~Zombie()
+{
+    zombieCount--;
+}
+
+void Zombie::Start()
+{
+    Collider *collider = new Collider(associated, Vec2(0.7f, 0.9f));
+    associated.AddComponent(collider);
 }
 
 void Zombie::Update(float dt)
 {
     Animator *animator = associated.GetComponent<Animator>();
 
+    if (hp <= 0 && !isDead)
+    {
+        isDead = true;
+        Collider *col = associated.GetComponent<Collider>();
+        if (col)
+            associated.RemoveComponent(col);
+        if (animator)
+            animator->SetAnimation("dead_right");
+    }
+
     if (isDead)
     {
         deathTimer.Update(dt);
-        if (deathTimer.Get() >= 5.0f)
-        {
+        if (deathTimer.Get() >= 2.0f)
             associated.RequestDelete();
-        }
         return;
     }
 
-    if (hit)
+    if (Character::player)
     {
-        hitTimer.Update(dt);
-        if (hitTimer.Get() >= 0.5f)
+        Vec2 myCenter = associated.box.Center();
+        Vec2 playerCenter = Character::player->GetPlayerCenter();
+        Vec2 dir = (playerCenter - myCenter).Normalize();
+
+        associated.box.x += dir.x * 100.0f * dt;
+        associated.box.y += dir.y * 100.0f * dt;
+
+        if (animator)
         {
-            hit = false;
-            if (animator != nullptr)
-            {
-                animator->SetAnimation("walking");
-            }
-        }
-    }
-
-    InputManager &input = InputManager::GetInstance();
-
-    if (input.MousePress(LEFT_MOUSE_BUTTON))
-    {
-        float mouseWorldX = input.GetMouseX() + Camera::pos.x;
-        float mouseWorldY = input.GetMouseY() + Camera::pos.y;
-
-        if (associated.box.Contains(mouseWorldX, mouseWorldY))
-        {
-            hp -= 10;
-            hitSound.Play(1);
-
-            if (hp <= 0)
-            {
-                isDead = true;
-                deathSound.Play(1);
-                Animator *animator = associated.GetComponent<Animator>();
-                if (animator != nullptr)
-                {
-                    animator->SetAnimation("dead");
-                }
-            }
+            if (dir.x > 0)
+                animator->SetAnimation("walking_right");
             else
-            {
-                hit = true;
-                hitTimer.Restart();
-                if (animator != nullptr)
-                {
-                    animator->SetAnimation("hit");
-                }
-            }
+                animator->SetAnimation("walking_left");
         }
     }
 }
 
 void Zombie::Render() {}
 
-bool Zombie::Is(std::string type)
+bool Zombie::Is(std::string type) { return type == "Zombie"; }
+
+void Zombie::NotifyCollision(GameObject &other)
 {
-    return type == "Zombie";
+    Bullet *bullet = other.GetComponent<Bullet>();
+    if (bullet && !bullet->targetsPlayer && !isDead)
+    {
+        hp -= bullet->GetDamage();
+    }
 }

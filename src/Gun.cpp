@@ -10,7 +10,6 @@
 Gun::Gun(GameObject &associated, std::weak_ptr<GameObject> character)
     : Component(associated), character(character), shotSound("Recursos/audio/Range.wav"), reloadSound("Recursos/audio/PumpAction.mp3")
 {
-
     cooldownState = 0;
 
     Sprite *sp = new Sprite(associated, "Recursos/img/Gun.png", 3, 2);
@@ -18,7 +17,7 @@ Gun::Gun(GameObject &associated, std::weak_ptr<GameObject> character)
 
     Animator *anim = new Animator(associated);
     anim->AddAnimation("idle", Animation(0, 0, 1.0f));
-    anim->AddAnimation("reloading", Animation(1, 1, 1.0f));
+    anim->AddAnimation("reloading", Animation(1, 5, 0.1f));
     associated.AddComponent(anim);
 
     anim->SetAnimation("idle");
@@ -27,7 +26,6 @@ Gun::Gun(GameObject &associated, std::weak_ptr<GameObject> character)
 void Gun::Update(float dt)
 {
     std::shared_ptr<GameObject> charGo = character.lock();
-
     if (!charGo || charGo->IsDead())
     {
         associated.RequestDelete();
@@ -44,7 +42,6 @@ void Gun::Update(float dt)
     associated.angleDeg = angle * 180.0f / M_PI;
 
     associated.box.SetCenter(charCenter);
-
     Vec2 offset(30, 0);
     offset = offset.GetRotated(angle);
     associated.box.x += offset.x;
@@ -54,13 +51,9 @@ void Gun::Update(float dt)
     if (sp)
     {
         if (associated.angleDeg > 90 || associated.angleDeg < -90)
-        {
             sp->SetFlip(SDL_FLIP_VERTICAL);
-        }
         else
-        {
             sp->SetFlip(SDL_FLIP_NONE);
-        }
     }
 
     if (cooldownState != 0)
@@ -73,7 +66,9 @@ void Gun::Update(float dt)
             cooldownState = 2;
             cdTimer.Restart();
             if (anim)
+            {
                 anim->SetAnimation("reloading");
+            }
             reloadSound.Play(1);
         }
         else if (cooldownState == 2 && cdTimer.Get() > 0.4f)
@@ -93,10 +88,7 @@ void Gun::Update(float dt)
 
 void Gun::Render() {}
 
-bool Gun::Is(std::string type)
-{
-    return type == "Gun";
-}
+bool Gun::Is(std::string type) { return type == "Gun"; }
 
 void Gun::Shoot(Vec2 target)
 {
@@ -111,14 +103,12 @@ void Gun::Shoot(Vec2 target)
         cdTimer.Restart();
 
         GameObject *bulletGo = new GameObject();
-
         Vec2 tip(associated.box.w / 2.0f, 0);
         tip = tip.GetRotated(angle);
-
         bulletGo->box.x = center.x + tip.x;
         bulletGo->box.y = center.y + tip.y;
 
-        Bullet *bullet = new Bullet(*bulletGo, angle, 500.0f, 10, 1000.0f);
+        Bullet *bullet = new Bullet(*bulletGo, angle, 500.0f, 10, 1000.0f, false);
         bulletGo->AddComponent(bullet);
         Game::GetInstance().GetState().AddObject(bulletGo);
     }

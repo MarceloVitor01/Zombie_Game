@@ -13,7 +13,6 @@ class GameObject
 public:
     GameObject();
     ~GameObject();
-
     void Start();
     void Update(float dt);
     void Render();
@@ -21,6 +20,7 @@ public:
     void RequestDelete();
     void AddComponent(Component *cpt);
     void RemoveComponent(Component *cpt);
+    void NotifyCollision(GameObject &other);
 
     template <typename T>
     T *GetComponent()
