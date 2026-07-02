@@ -5,7 +5,6 @@
 #include "Zombie.h"
 #include "NPC.h"
 #include "Sprite.h"
-#include "Character.h"
 
 WaveSpawner::WaveSpawner(GameObject &associated) : Component(associated)
 {
@@ -26,9 +25,8 @@ void WaveSpawner::Update(float dt)
 {
     if (commands.empty())
     {
-        if (Zombie::zombieCount == 0 && Character::player != nullptr && Character::player->hp > 0)
+        if (Zombie::zombieCount == 0)
         {
-            Game::GetInstance().GetState().EndGame(true);
             associated.RequestDelete();
         }
         return;

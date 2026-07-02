@@ -63,8 +63,6 @@ void Character::Update(float dt)
         deathTimer.Update(dt);
         if (deathTimer.Get() >= 2.0f)
         {
-            // AQUI ESTÁ: Se o jogador morrer, o ecrã muda para LOSE
-            Game::GetInstance().GetState().EndGame(false);
             associated.RequestDelete();
         }
         return;

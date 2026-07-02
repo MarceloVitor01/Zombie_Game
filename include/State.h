@@ -2,34 +2,39 @@
 #define STATE_H
 
 #include "GameObject.h"
-#include "Music.h"
-#include <vector>
 #include <memory>
+#include <vector>
 
 class State
 {
 public:
     State();
-    ~State();
+    virtual ~State();
+
+    virtual void LoadAssets() = 0;
+    virtual void Update(float dt) = 0;
+    virtual void Render() = 0;
+
+    virtual void Start() = 0;
+    virtual void Pause() = 0;
+    virtual void Resume() = 0;
+
+    virtual std::weak_ptr<GameObject> AddObject(GameObject *go);
+    virtual std::weak_ptr<GameObject> GetObjectPtr(GameObject *go);
+
     bool QuitRequested();
-    void LoadAssets();
-    void Update(float dt);
-    void Render();
-    void Start();
-    std::weak_ptr<GameObject> AddObject(GameObject *go);
-    std::weak_ptr<GameObject> GetObjectPtr(GameObject *go);
+    bool PopRequested();
 
-    void EndGame(bool win);
+protected:
+    void StartArray();
+    virtual void UpdateArray(float dt);
+    virtual void RenderArray();
 
-private:
-    void AddObject(int mouseX, int mouseY);
-    Music music;
+    bool popRequested;
     bool quitRequested;
     bool started;
-    std::vector<std::shared_ptr<GameObject>> objectArray;
 
-    bool endGameFlag;
-    bool winFlag;
+    std::vector<std::shared_ptr<GameObject>> objectArray;
 };
 
 #endif

@@ -4,6 +4,8 @@
 #include "SDL_include.h"
 #include "State.h"
 #include <string>
+#include <stack>
+#include <memory>
 
 class Game
 {
@@ -14,6 +16,7 @@ public:
     State &GetState();
     static Game &GetInstance();
     float GetDeltaTime();
+    void Push(State *state);
 
 private:
     Game(std::string title, int width, int height);
@@ -22,7 +25,10 @@ private:
     static Game *instance;
     SDL_Window *window;
     SDL_Renderer *renderer;
-    State *state;
+
+    State *storedState;
+    std::stack<std::unique_ptr<State>> stateStack;
+
     int frameStart;
     float dt;
 };
