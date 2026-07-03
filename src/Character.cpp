@@ -100,8 +100,6 @@ void Character::Update(float dt)
         }
     }
 
-    // --- Limitação do Mapa ---
-    // Retângulo de 1280x1536 que começa na posição 640x512
     float minX = 640.0f;
     float minY = 512.0f;
     float maxX = 640.0f + 1280.0f;
@@ -115,7 +113,6 @@ void Character::Update(float dt)
         associated.box.x = maxX - associated.box.w;
     if (associated.box.y + associated.box.h > maxY)
         associated.box.y = maxY - associated.box.h;
-    // -------------------------
 
     if (animator)
     {

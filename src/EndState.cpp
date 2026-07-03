@@ -35,7 +35,6 @@ void EndState::LoadAssets()
     bg->box.y = 0;
     AddObject(bg);
 
-    // Texto de instrução para o EndState
     GameObject *textGo = new GameObject();
     std::string instrText = "ESC para sair | ESPACO para jogar novamente";
     Text *textStr = new Text(*textGo, "Recursos/font/neodgm.ttf", 36, Text::BLENDED, instrText, {200, 50, 50, 255});
@@ -67,10 +66,9 @@ void EndState::Update(float dt)
     if (input.KeyPress(ESCAPE_KEY))
     {
         popRequested = true;
-        quitRequested = true; // Força encerramento
+        quitRequested = true;
     }
 
-    // De acordo com a especificação, se apertar espaço, o jogo empilha um TitleState
     if (input.KeyPress(SDLK_SPACE))
     {
         popRequested = true;

@@ -15,12 +15,11 @@ TitleState::TitleState() : showText(true)
     bg->box.y = 0;
     AddObject(bg);
 
-    // Texto solicitando ação do usuário
     GameObject *textGo = new GameObject();
     Text *textStr = new Text(*textGo, "Recursos/font/neodgm.ttf", 40, Text::BLENDED, "Pressione ESPACO para jogar", {255, 255, 255, 255});
     textGo->AddComponent(textStr);
-    textGo->box.x = 1200 / 2 - textGo->box.w / 2; // Centralizando em X
-    textGo->box.y = 750;                          // Centralizando em Y próximo ao fundo
+    textGo->box.x = 1200 / 2 - textGo->box.w / 2;
+    textGo->box.y = 750;
     textObj = AddObject(textGo);
 }
 
@@ -58,7 +57,6 @@ void TitleState::Update(float dt)
         Game::GetInstance().Push(new StageState());
     }
 
-    // Lógica para piscar o texto alternando a cor/transparência
     textTimer.Update(dt);
     if (textTimer.Get() > 0.6f)
     {

@@ -100,7 +100,7 @@ void Text::RemakeTexture()
     }
     else if (style == SHADED)
     {
-        SDL_Color bg = {0, 0, 0, 255}; // Fundo preto para o shaded
+        SDL_Color bg = {0, 0, 0, 255};
         surface = TTF_RenderText_Shaded(font, text.c_str(), color, bg);
     }
     else if (style == BLENDED)
