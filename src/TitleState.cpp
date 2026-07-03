@@ -4,8 +4,9 @@
 #include "Game.h"
 #include "StageState.h"
 #include "Camera.h"
+#include "Text.h"
 
-TitleState::TitleState()
+TitleState::TitleState() : showText(true)
 {
     GameObject *bg = new GameObject();
     Sprite *sp = new Sprite(*bg, "Recursos/img/Title.png");
@@ -13,6 +14,14 @@ TitleState::TitleState()
     bg->box.x = 0;
     bg->box.y = 0;
     AddObject(bg);
+
+    // Texto solicitando ação do usuário
+    GameObject *textGo = new GameObject();
+    Text *textStr = new Text(*textGo, "Recursos/font/neodgm.ttf", 40, Text::BLENDED, "Pressione ESPACO para jogar", {255, 255, 255, 255});
+    textGo->AddComponent(textStr);
+    textGo->box.x = 1200 / 2 - textGo->box.w / 2; // Centralizando em X
+    textGo->box.y = 750;                          // Centralizando em Y próximo ao fundo
+    textObj = AddObject(textGo);
 }
 
 TitleState::~TitleState()
@@ -47,6 +56,26 @@ void TitleState::Update(float dt)
     if (input.KeyPress(SDLK_SPACE))
     {
         Game::GetInstance().Push(new StageState());
+    }
+
+    // Lógica para piscar o texto alternando a cor/transparência
+    textTimer.Update(dt);
+    if (textTimer.Get() > 0.6f)
+    {
+        showText = !showText;
+        std::shared_ptr<GameObject> textPtr = textObj.lock();
+        if (textPtr)
+        {
+            Text *textComp = textPtr->GetComponent<Text>();
+            if (textComp)
+            {
+                if (showText)
+                    textComp->SetColor({255, 255, 255, 255});
+                else
+                    textComp->SetColor({255, 255, 255, 0});
+            }
+        }
+        textTimer.Restart();
     }
 
     UpdateArray(dt);

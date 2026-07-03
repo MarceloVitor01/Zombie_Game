@@ -2,6 +2,8 @@
 #define TITLESTATE_H
 
 #include "State.h"
+#include "Timer.h"
+#include <memory>
 
 class TitleState : public State
 {
@@ -14,6 +16,11 @@ public:
     void Start() override;
     void Pause() override;
     void Resume() override;
+
+private:
+    Timer textTimer;
+    bool showText;
+    std::weak_ptr<GameObject> textObj;
 };
 
 #endif

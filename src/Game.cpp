@@ -21,6 +21,9 @@ Game::Game(std::string title, int width, int height)
         throw std::runtime_error(SDL_GetError());
     Mix_AllocateChannels(32);
 
+    if (TTF_Init() != 0)
+        throw std::runtime_error(SDL_GetError());
+
     window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, 0);
     if (window == nullptr)
         throw std::runtime_error(SDL_GetError());
@@ -47,6 +50,8 @@ Game::~Game()
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+
+    TTF_Quit();
     Mix_CloseAudio();
     Mix_Quit();
     IMG_Quit();
@@ -92,9 +97,6 @@ void Game::Run()
         if (stateStack.top()->PopRequested())
         {
             stateStack.pop();
-
-            // ATENÇÃO: As 3 funções Resources::Clear foram removidas
-            // daqui para evitar apagar telas que ainda serão usadas!
 
             if (!stateStack.empty())
             {
